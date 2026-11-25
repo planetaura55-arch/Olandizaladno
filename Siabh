@@ -1,0 +1,120 @@
+
+local P=game:GetService("Players")
+local U=game:GetService("UserInputService")
+local R=game:GetService("RunService")
+local me=P.LocalPlayer
+local gui=Instance.new("ScreenGui",me:WaitForChild("PlayerGui"))
+gui.Name="MAKSIU HUB"
+gui.ResetOnSpawn=false
+
+local function make(p,c,s,pos,t)
+ local o=Instance.new(c,p)
+ o.Size=s;o.Position=pos
+ o.BackgroundColor3=Color3.new(0,0,0)
+ o.Text=t or ""
+ o.TextColor3=Color3.new(1,1,1)
+ o.Font=Enum.Font.GothamBold
+ o.TextSize=14
+ o.Parent=p
+ Instance.new("UICorner",o).CornerRadius=UDim.new(0,15)
+ return o
+end
+
+local login=make(gui,"Frame",UDim2.fromScale(.7,.38),UDim2.fromScale(.15,.31))
+local title=make(login,"TextLabel",UDim2.fromScale(.9,.25),UDim2.fromScale(.05,.05),"MAKSIU HUB")
+title.BackgroundTransparency=1
+local pass=make(login,"TextBox",UDim2.fromScale(.8,.22),UDim2.fromScale(.1,.36),"")
+pass.PlaceholderText="HASŁO"
+local enter=make(login,"TextButton",UDim2.fromScale(.8,.2),UDim2.fromScale(.1,.7),"ZALOGUJ")
+
+local function hub()
+ login:Destroy()
+ local f=make(gui,"Frame",UDim2.fromScale(.72,.85),UDim2.fromScale(.14,.07))
+ make(f,"TextLabel",UDim2.fromScale(.65,.1),UDim2.fromScale(.03,.01),"MAKSIU HUB").BackgroundTransparency=1
+ local x=make(f,"TextButton",UDim2.fromScale(.12,.08),UDim2.fromScale(.85,.01),"X")
+ local m=make(f,"TextButton",UDim2.fromScale(.12,.08),UDim2.fromScale(.71,.01),"—")
+ local v=make(f,"TextButton",UDim2.fromScale(.42,.1),UDim2.fromScale(.04,.14),"VISUAL")
+ local a=make(f,"TextButton",UDim2.fromScale(.42,.1),UDim2.fromScale(.54,.14),"AIMBOT")
+ local panel=make(f,"Frame",UDim2.fromScale(.92,.68),UDim2.fromScale(.04,.28))
+ local esp=make(panel,"TextButton",UDim2.fromScale(.9,.15),UDim2.fromScale(.05,.05),"ESP: OFF")
+ local aim=make(panel,"TextButton",UDim2.fromScale(.9,.15),UDim2.fromScale(.05,.05),"AIMBOT: OFF")
+ local fov=make(panel,"TextButton",UDim2.fromScale(.9,.15),UDim2.fromScale(.05,.25),"FOV: 120")
+ local smooth=make(panel,"TextButton",UDim2.fromScale(.9,.15),UDim2.fromScale(.05,.45),"SMOOTH: 0.15")
+ aim.Visible=false;fov.Visible=false;smooth.Visible=false
+ local on=false
+ local function update(p)
+  if p==me or not p.Character then return end
+  local c=p.Character
+  local h=c:FindFirstChild("MaksESP")
+  if on and not h then
+   h=Instance.new("Highlight")
+   h.Name="MaksESP"
+   h.FillColor=Color3.new(1,0,0)
+   h.OutlineColor=Color3.new(1,0,0)
+   h.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop
+   h.Parent=c
+  elseif not on and h then h:Destroy() end
+ end
+ esp.MouseButton1Click:Connect(function()
+  on=not on
+  esp.Text="ESP: "..(on and "ON" or "OFF")
+  for _,p in ipairs(P:GetPlayers()) do update(p) end
+ end)
+ P.PlayerAdded:Connect(function(p)
+  p.CharacterAdded:Connect(function()
+   task.wait(1);update(p)
+  end)
+ end)
+ for _,p in ipairs(P:GetPlayers()) do
+  if p~=me then
+   p.CharacterAdded:Connect(function()
+    task.wait(1);update(p)
+   end)
+  end
+ end
+ v.MouseButton1Click:Connect(function()
+  esp.Visible=true;aim.Visible=false;fov.Visible=false;smooth.Visible=false
+ end)
+ a.MouseButton1Click:Connect(function()
+  esp.Visible=false;aim.Visible=true;fov.Visible=true;smooth.Visible=true
+ end)
+ local active=false
+ aim.MouseButton1Click:Connect(function()
+  active=not active
+  aim.Text="AIMBOT: "..(active and "ON" or "OFF")
+ end)
+ local n=120
+ fov.MouseButton1Click:Connect(function()
+  n=n+20;if n>240 then n=60 end
+  fov.Text="FOV: "..n
+ end)
+ local s=.15
+ smooth.MouseButton1Click:Connect(function()
+  s=s+.05;if s>.5 then s=.05 end
+  smooth.Text="SMOOTH: "..s
+ end)
+ local logo=make(gui,"TextButton",UDim2.fromOffset(55,55),UDim2.fromScale(.03,.4),"M")
+ logo.Visible=false
+ m.MouseButton1Click:Connect(function()
+  f.Visible=false;logo.Visible=true
+ end)
+ logo.MouseButton1Click:Connect(function()
+  f.Visible=true;logo.Visible=false
+ end)
+ x.MouseButton1Click:Connect(function() gui:Destroy() end)
+end
+
+local done=false
+local function check()
+ if done then return end
+ if pass.Text=="Maks" then
+  done=true;hub()
+ else
+  pass.Text=""
+  pass.PlaceholderText="ZŁE HASŁO"
+ end
+end
+enter.MouseButton1Click:Connect(check)
+pass.FocusLost:Connect(function(k)
+ if k then check() end
+end)
